@@ -1,0 +1,1342 @@
+<html><head><base href="." /><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spain Fuel Stations Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; }
+  #map { height: 100vh; width: 100vw; }
+  .station-popup { font-size: 14px; }
+  .station-popup h3 { margin-bottom: 8px; color: #2c3e50; }
+  .station-popup p { margin: 4px 0; }
+  .price { font-weight: bold; color: #e74c3c; }
+  .route-inputs {
+    position: fixed;
+    top: 20px;
+    left: 5%;  
+    width: 90%; 
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 90vh; 
+    overflow-y: auto; 
+    transition: all 0.3s ease;
+  }
+  .route-inputs:hover {
+    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+  }
+  .route-inputs input, .route-inputs select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  .route-inputs input:focus, .route-inputs select:focus {
+    border-color: #2c3e50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+  }
+  .route-inputs button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  .route-inputs button:hover {
+    background: #34495e;
+    transform: translateY(-1px);
+  }
+  .sector-title {
+    font-weight: 600;
+    margin: 20px 0 15px;
+    color: #2c3e50;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+  }
+  .station-item {
+    padding: 15px;
+    margin: 8px 0;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+  }
+  .station-item:hover {
+    background: #f1f3f5;
+    transform: translateX(3px);
+  }
+  .station-price {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 5px 0;
+  }
+  .routes-modal {
+    display: none;
+  }
+  .routes-modal.open {
+    display: block;
+  }
+  .routes-modal .modal-buttons {
+    margin-top: 20px;
+    text-align: right;
+  }
+  .routes-modal .modal-buttons button {
+    padding: 8px 16px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .routes-modal .modal-buttons .confirm {
+    background: #2c3e50;
+    color: white;
+  }
+  .routes-modal .modal-buttons .cancel {
+    background: #e74c3c;
+    color: white;
+  }
+  .route-preview {
+    cursor: pointer;
+  }
+  .route-preview:hover {
+    opacity: 0.8;
+  }
+  .route-preview.selected {
+    opacity: 1;
+    weight: 5;
+  }
+  .add-to-route-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+  .add-to-route-btn:hover {
+    background: #219a52;
+    transform: translateY(-1px);
+  }
+  .loading-card {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    width: 300px;
+    text-align: center;
+  }
+  .loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 3px solid #2c3e50;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 15px auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .stations-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  .stations-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .stations-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  .stations-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  .collapse-btn {
+    width: 100%;
+    padding: 8px;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 8px;
+    margin-top: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  .collapse-btn:hover {
+    background: #e9ecef;
+  }
+  .collapse-btn::after {
+    content: '▼';
+    font-size: 12px;
+    transition: transform 0.3s ease;
+  }
+  .collapse-btn.collapsed::after {
+    transform: rotate(-90deg);
+  }
+  .google-maps-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;  
+      transform: translateX(-50%);  
+      background: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 999;
+      transition: all 0.3s ease;
+  }
+  .google-maps-btn:hover {
+      background: #f8f9fa;
+      transform: translate(-50%, -1px);  
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .station-marker-green {
+      width: 25px;
+      height: 41px;
+      background: #00FF00;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  .station-marker-red {
+      width: 25px;
+      height: 41px;
+      background: #FF0000;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  @media (max-width: 600px) {
+    .route-inputs {
+      width: 95%; 
+      left: 2.5%; 
+    }
+  }
+  .menu-icon {
+    position: fixed;
+    bottom: 20px;
+    left: 60px; 
+    background: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+  .menu-icon:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px; 
+    width: 300px; 
+    height: 100vh;
+    background: white; 
+    color: black; 
+    padding: 0;  
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1100;
+    transition: left 0.3s ease;
+  }
+  .sidebar.open {
+    left: 0; 
+  }
+  .map-type-options {
+    background: white; 
+    display: flex; 
+    justify-content: space-around; 
+    padding: 12px 0; 
+    border-bottom: 1px solid #ddd; 
+    margin-bottom: 0;  
+    width: 100%;  
+  }
+  .map-type-option {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center; 
+    cursor: pointer;
+    padding: 5px 0; 
+    position: relative;
+  }
+  .map-type-option span {
+    margin: 0; 
+    font-size: 12px; 
+    font-weight: bold;
+    margin-top: 4px; 
+  }
+  .map-type-option.selected svg, .map-type-option.selected span {
+    color: #2196F3; 
+  }
+  .options-item {
+    background: #f1f3f5; 
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column; 
+  }
+  .options-title {
+    color: #2c3e50; 
+    font-weight: bold;
+  }
+  .options-subtitle {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #007BFF; 
+    margin-top: 4px; 
+    font-size: 12px; /* Reduced font size */
+  }
+  .fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .fullscreen-modal.open {
+    display: flex;
+  }
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+  .close-modal {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .brand-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .brand-options label {
+    display: block;
+    cursor: pointer;
+    width: 48%;
+    padding: 5px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .brand-filter-actions {
+    margin-bottom: 15px;
+  }
+  .map-type-option.selected:after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 4px;
+    background-color: #2196F3; 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+  /* Styles for app info at the bottom of the sidebar */
+  .sidebar .app-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;  
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+      background-color: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+  }
+  .sidebar .app-info .app-logo {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 5px;
+      background-color: #2c3e50; /* Placeholder for logo color */
+      border-radius: 50%;
+  }
+  .sidebar .app-info .app-name, 
+  .sidebar .app-info .app-version {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2c3e50;
+  }
+  .route-popup .leaflet-popup-content-wrapper {
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 0; /* Remove default padding */
+  }
+  .route-popup .leaflet-popup-content {
+    margin: 0;
+    min-width: 120px; /* Reduced from 150px */
+  }
+  .route-popup .leaflet-popup-tip {
+    background: white;
+  }
+</style>
+</head>
+<body>
+<div class="route-inputs">
+  <input type="text" id="origin" placeholder="Origin address" />
+  <input type="text" id="destination" placeholder="Destination address" />
+  <button onclick="calculateRoute()">Calculate Route</button>
+</div>
+<div id="loadingCard" class="loading-card" style="display: none;">
+  <div class="loading-spinner"></div>
+  <div style="text-align: center;">Loading fuel stations...</div>
+</div>
+<div id="map"></div>
+<button id="googleMapsBtn" class="google-maps-btn" onclick="exportToGoogleMaps()" style="display: none;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#4285F4">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+    </svg>
+    Open in Google Maps
+</button>
+<button id="menuIcon" class="menu-icon" onclick="toggleSidebar()">
+    <svg width="24" height="24" viewBox="0 0 24 24">
+        <path d="M3 6h18v2H3V6zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/>
+    </svg>
+</button>
+<div id="sidebar" class="sidebar">
+    <div class="map-type-options">
+      <div class="map-type-option standard-option" onclick="setMapType('standard')">
+        <svg width="24" height="24" viewBox="0 0 24 24" class="map-type-svg">
+          <rect x="4" y="4" width="16" height="16" stroke="#2c3e50" fill="transparent"/>
+          <line x1="4" y1="8" x2="20" y2="8" stroke="#2c3e50" />
+          <line x1="4" y1="16" x2="20" y2="16" stroke="#2c3e50" />
+        </svg>
+        <span>Standard</span>
+      </div>
+      <div class="map-type-option hybrid-option" onclick="setMapType('hybrid')">
+        <svg width="24" height="24" viewBox="0 0 24 24" class="map-type-svg">
+          <path d="M4 4h16v16H4z" fill="none" stroke="#2c3e50"/>
+          <line x1="4" y1="12" x2="20" y2="12" stroke="#2c3e50" />
+          <line x1="12" y1="4" x2="12" y2="20" stroke="#2c3e50" />
+        </svg>
+        <span>Hybrid</span>
+      </div>
+      <div class="map-type-option satellite-option" onclick="setMapType('satellite')">
+        <svg width="24" height="24" viewBox="0 0 24 24" class="map-type-svg">
+          <circle cx="12" cy="12" r="10" stroke="#2c3e50" fill="transparent"/>
+          <path d="M4 12a8 8 0 0 1 16 0" stroke="#2c3e50" />
+        </svg>
+        <span>Satellite</span>
+      </div>
+    </div>
+    <ul class="options-list">
+        <li class="options-item" onclick="toggleFullscreenModal('modalFuelType')">
+            <span class="options-title">Fuel Type</span>
+            <span class="options-subtitle">Choose your fuel type</span>
+        </li>
+        <li class="options-item" onclick="toggleFullscreenModal('modalBrandFilter')">
+            <span class="options-title">Brand Filter</span>
+            <span class="options-subtitle">Set your preferred brands</span>
+        </li>
+        <li class="options-item" onclick="toggleFullscreenModal('modalTankCapacity')">
+            <span class="options-title">Tank Capacity</span>
+            <span class="options-subtitle">Enter your vehicle's tank size</span>
+        </li>
+        <li class="options-item" onclick="toggleFullscreenModal('modalFuelConsumption')">
+            <span class="options-title">Fuel Consumption</span>
+            <span class="options-subtitle">Input your average fuel usage</span>
+        </li>
+        <li class="options-item" onclick="toggleFullscreenModal('modalDeleteAds')">
+            <span class="options-title">Delete Ads</span>
+            <!-- Removed subtitle for Delete Ads section -->
+        </li>
+        <li class="options-item" onclick="toggleFullscreenModal('modalContact')">
+            <span class="options-title">Contact</span>
+            <!-- Removed subtitle for Contact section -->
+        </li>
+    </ul>
+    <div class="app-info">
+        <div class="app-logo"></div>
+        <div class="app-name">Drivy</div>
+        <div class="app-version">Version 1.0</div>
+    </div>
+</div>
+
+<!-- Modals for each section -->
+<div id="modalBrandFilter" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Set your preferred brands</h2>
+    <p>Select preferred fuel station brands:</p>
+    <div class="brand-filter-actions">
+      <button id="selectAllBrands" onclick="selectAllBrands()">Select All</button>
+      <button id="deselectAllBrands" onclick="deselectAllBrands()">Deselect All</button>
+    </div>
+    <div id="brandFilterOptions" class="brand-options">
+      <label><input type="checkbox" value="Alcampo"> Alcampo</label>
+      <label><input type="checkbox" value="Ballenoil"> Ballenoil</label>
+      <label><input type="checkbox" value="Bonarea"> Bonarea</label>
+      <label><input type="checkbox" value="Bp"> Bp</label>
+      <label><input type="checkbox" value="Campsa"> Campsa</label>
+      <label><input type="checkbox" value="Carrefour"> Carrefour</label>
+      <label><input type="checkbox" value="Cepsa"> Cepsa</label>
+      <label><input type="checkbox" value="Disa"> Disa</label>
+      <label><input type="checkbox" value="E.leclerc"> E.leclerc</label>
+      <label><input type="checkbox" value="Eroski"> Eroski</label>
+      <label><input type="checkbox" value="Esso"> Esso</label>
+      <label><input type="checkbox" value="Galp"> Galp</label>
+      <label><input type="checkbox" value="Makro"> Makro</label>
+      <label><input type="checkbox" value="Meroil"> Meroil</label>
+      <label><input type="checkbox" value="Pcan"> Pcan</label>
+      <label><input type="checkbox" value="Petronor"> Petronor</label>
+      <label><input type="checkbox" value="Repsol"> Repsol</label>
+      <label><input type="checkbox" value="Shell"> Shell</label>
+      <label><input type="checkbox" value="Texaco"> Texaco</label>
+      <label><input type="checkbox" value="Tgas"> Tgas</label>
+      <label><input type="checkbox" value="Otras"> Otras</label>
+    </div>
+    <button class="close-modal" onclick="applyBrandFilter()">Apply</button>
+  </div>
+</div>
+
+<div id="modalTankCapacity" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Your Vehicle's Tank Size</h2>
+    <p>Enter your vehicle's tank capacity in liters:</p>
+    <input type="number" id="tankCapacityInput" placeholder="e.g., 50" min="0" step="1" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd;"/>
+    <button class="close-modal" onclick="applyTankCapacity()">Apply</button>
+    <button class="close-modal" onclick="toggleFullscreenModal('modalTankCapacity')">Close</button>
+  </div>
+</div>
+
+<div id="modalFuelConsumption" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Average Fuel Consumption</h2>
+    <p>Enter your vehicle's fuel consumption in liters per 100 km:</p>
+    <input type="number" id="fuelConsumptionInput" placeholder="e.g., 6.5" min="0" step="0.1" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd;"/>
+    <button class="close-modal" onclick="applyFuelConsumption()">Apply</button>
+    <button class="close-modal" onclick="toggleFullscreenModal('modalFuelConsumption')">Close</button>
+  </div>
+</div>
+
+<div id="modalDeleteAds" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Remove Ads</h2>
+    <p>Provide a detailed explanation or input form here.</p>
+    <button class="close-modal" onclick="toggleFullscreenModal('modalDeleteAds')">Close</button>
+  </div>
+</div>
+
+<div id="modalContact" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Contact Support</h2>
+    <p>Provide detailed contact information or a form here.</p>
+    <button class="close-modal" onclick="toggleFullscreenModal('modalContact')">Close</button>
+  </div>
+</div>
+
+<div id="modalFuelType" class="fullscreen-modal">
+  <div class="modal-content">
+    <h2>Select Fuel Type</h2>
+    <select id="fuelType" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd;">
+      <option value="all">All fuel types</option>
+      <option value="Precio Gasolina 95 E5">Gasoline 95 E5</option>
+      <option value="Precio Gasolina 95 E5 Premium">Gasoline 95 E5 Premium</option>
+      <option value="Precio Gasolina 98 E5">Gasoline 98 E5</option>
+      <option value="Precio Gasoleo A">Diesel A</option>
+      <option value="Precio Gasoleo Premium">Diesel Premium</option>
+      <option value="Precio Hidrogeno">Hydrogen</option>
+      <option value="Precio Gas Natural Comprimido">CNG</option>
+      <option value="Precio Gas Natural Licuado">LNG</option>
+      <option value="Precio Gases licuados del petróleo">LPG</option>
+      <option value="Precio Bioetanol">Bioethanol</option>
+      <option value="Precio Biodiesel">Biodiesel</option>
+    </select>
+    <button class="close-modal" onclick="applyFuelType()">Apply</button>
+    <button class="close-modal" onclick="toggleFullscreenModal('modalFuelType')">Close</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script>
+const map = L.map('map', {
+    zoomControl: false  
+}).setView([40.4168, -3.7038], 6);
+
+L.control.zoom({
+    position: 'bottomright'
+}).addTo(map);
+
+let markers = [];
+let selectedRouteIndex = null;
+let availableRoutes = [];
+let routePolylines = [];
+
+// Tile layers for different map types
+const tileLayers = {
+    standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }),
+    hybrid: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data: © OpenStreetMap, SRTM | Map style: © TopoMap'
+    }),
+    satellite: L.tileLayer('https://tiles.arcgis.com/tiles/lh9c8PxsrMzcaPCk/arcgis/rest/services/TileTest/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© ArcGIS'
+    })
+};
+
+// Set initial map view to standard
+tileLayers.standard.addTo(map);
+
+function createStationMarker(lat, lng, isLowest, isOverallLowest) {
+  const markerIcon = isOverallLowest ? 
+    L.divIcon({
+      className: 'station-marker-green',
+      iconSize: [25, 41],
+      iconAnchor: [12.5, 41],
+      popupAnchor: [0, -41]
+    }) : isLowest ? 
+    L.divIcon({
+      className: 'station-marker-red',
+      iconSize: [25, 41],
+      iconAnchor: [12.5, 41],
+      popupAnchor: [0, -41]
+    }) : null;
+
+  return L.marker([lat, lng], markerIcon ? {icon: markerIcon} : { });
+}
+
+async function geocodeAddress(address) {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+    const data = await response.json();
+    if (data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+    throw new Error('Address not found');
+}
+
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    const R = 6371; 
+    const dLat = deg2rad(lat2-lat1);
+    const dLon = deg2rad(lon2-lon1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function deg2rad(deg) {
+    return deg * (Math.PI/180);
+}
+
+function isPointInSection(point, sectionStart, sectionEnd) {
+    const pointDist = getDistanceFromLatLonInKm(
+        sectionStart.lat, sectionStart.lng,
+        point[0], point[1]
+    );
+    const sectionDist = getDistanceFromLatLonInKm(
+        sectionStart.lat, sectionStart.lng,
+        sectionEnd.lat, sectionEnd.lng
+    );
+    return pointDist <= sectionDist;
+}
+
+function getDistanceToLine(point, lineStart, lineEnd) {
+    const lat = point[0];
+    const lng = point[1];
+    
+    const x = lineStart.lat;
+    const y = lineStart.lng;
+    const x1 = lineEnd.lat;
+    const y1 = lineEnd.lng;
+    
+    const A = lat - x;
+    const B = lng - y;
+    const C = x1 - x;
+    const D = y1 - y;
+    
+    const dot = A * C + B * D;
+    const len_sq = C * C + D * D;
+    let param = -1;
+    
+    if (len_sq != 0) param = dot / len_sq;
+    
+    let xx, yy;
+    
+    if (param < 0) {
+        xx = x;
+        yy = y;
+    } else if (param > 1) {
+        xx = x1;
+        yy = y1;
+    } else {
+        xx = x + param * C;
+        yy = y + param * D;
+    }
+    
+    return getDistanceFromLatLonInKm(lat, lng, xx, yy);
+}
+
+function isPointNearRoutePart(point, sectionCoords) {
+    for (let i = 0; i < sectionCoords.length - 1; i++) {
+        const start = sectionCoords[i];
+        const end = sectionCoords[i + 1];
+        const distance = getDistanceToLine(point, start, end);
+        if (distance <= 1.5) {  
+            return true;
+        }
+    }
+    return false;
+}
+
+function getSections(coords, totalDistance) {
+    let sections = [];
+    if (totalDistance <= 100) {
+        sections.push({ coords: coords });
+    } else {
+        const pointsPer80km = Math.floor(coords.length / totalDistance * 80);
+        let currentIndex = 0;
+        
+        while (currentIndex < coords.length) {
+            sections.push({
+                coords: coords.slice(currentIndex, currentIndex + pointsPer80km)
+            });
+            currentIndex += pointsPer80km;
+        }
+    }
+    return sections;
+}
+
+async function loadFuelStationsInSections(sections, totalDistance) {
+    try {
+        const response = await fetch('https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/');
+        const data = await response.json();
+        const selectedFuelType = document.getElementById('fuelType').value;
+        const selectedBrands = Array.from(document.querySelectorAll('#brandFilterOptions input:checked'))
+                                    .map(input => input.value.toLowerCase());
+
+        const stationsOverall = [];  
+
+        document.getElementById('loadingCard').style.display = 'none';
+        
+        sections.forEach((section, index) => {
+            let stationsInSection = data.ListaEESSPrecio
+                .filter(station => {
+                    const lat = parseFloat(station["Latitud"].replace(',', '.'));
+                    const lng = parseFloat(station["Longitud (WGS84)"].replace(',', '.'));
+                    
+                    if (!lat || !lng || (selectedFuelType !== 'all' && !station[selectedFuelType])) {
+                        return false;
+                    }
+
+                    const stationBrand = station["Rótulo"].toLowerCase();
+                    const isBrandMatch = selectedBrands.some(brand => stationBrand.includes(brand));
+                    if (selectedBrands.length > 0 && !isBrandMatch) {
+                        return false;
+                    }
+
+                    return isPointNearRoutePart([lat, lng], section.coords);
+                })
+                .map(station => ({
+                    ...station,
+                    price: selectedFuelType === 'all' ? 
+                        parseFloat(station["Precio Gasolina 95 E5"]?.replace(',', '.') || Infinity) :
+                        parseFloat(station[selectedFuelType]?.replace(',', '.') || Infinity)
+                }))
+                .sort((a, b) => a.price - b.price);
+
+            stationsOverall.push(...stationsInSection);
+
+            if (totalDistance > 100) {
+                stationsInSection = stationsInSection.slice(0, 6);
+            }
+            
+            const lowestPriceInSection = Math.min(...stationsInSection.map(s => s.price));
+
+            stationsInSection.forEach(station => {
+                const lat = parseFloat(station["Latitud"].replace(',', '.'));
+                const lng = parseFloat(station["Longitud (WGS84)"].replace(',', '.'));
+                const isLowest = station.price === lowestPriceInSection;
+                
+                const marker = createStationMarker(lat, lng, isLowest, false).addTo(map);
+                markers.push(marker);
+                
+                let popupContent = `
+                    <div class="station-popup">
+                        <h3>${station["Rótulo"]}</h3>
+                        <p>${station["Dirección"]}</p>
+                `;
+                
+                let priceText = '';
+                const fuelTypes = {
+                    "Precio Gasolina 95 E5": "G95",
+                    "Precio Gasoleo A": "Diesel",
+                    "Precio Gasolina 98 E5": "Gasoline 98 E5",
+                    "Precio Gasolina 95 E5 Premium": "Gasoline 95 E5 Premium",
+                    "Precio Gasoleo Premium": "Diesel Premium",
+                    "Precio Hidrogeno": "Hydrogen",
+                    "Precio Gas Natural Comprimido": "CNG",
+                    "Precio Gas Natural Licuado": "LNG",
+                    "Precio Gases licuados del petróleo": "LPG",
+                    "Precio Bioetanol": "Bioethanol",
+                    "Precio Biodiesel": "Biodiesel"
+                };
+
+                if (selectedFuelType === 'all') {
+                    for (const [key, label] of Object.entries(fuelTypes)) {
+                        if (station[key]) {
+                            popupContent += `<p>${label}: <span class="price">${station[key]}€</span></p>`;
+                            priceText += `${label}: ${station[key]}€ `;
+                        }
+                    }
+                } else {
+                    const fuelLabels = {
+                        "Precio Gasolina 95 E5": "Gasoline 95 E5",
+                        "Precio Gasoleo A": "Diesel A",
+                        "Precio Gasolina 98 E5": "Gasoline 98 E5",
+                        "Precio Gasolina 95 E5 Premium": "Gasoline 95 E5 Premium",
+                        "Precio Gasoleo Premium": "Diesel Premium",
+                        "Precio Hidrogeno": "Hydrogen",
+                        "Precio Gas Natural Comprimido": "CNG",
+                        "Precio Gas Natural Licuado": "LNG",
+                        "Precio Gases licuados del petróleo": "LPG",
+                        "Precio Bioetanol": "Bioethanol",
+                        "Precio Biodiesel": "Biodiesel"
+                    };
+                    
+                    if (station[selectedFuelType]) {
+                        popupContent += `<p>${fuelLabels[selectedFuelType]}: <span class="price">${station[selectedFuelType]}€</span></p>`;
+                        priceText = `${station[selectedFuelType]}€`;
+                    }
+                }
+                
+                popupContent += `
+                    <button class="add-to-route-btn" onclick="addStationToRoute(${lat}, ${lng})">Add to Route</button>
+                </div>`;
+                marker.bindPopup(popupContent);
+            });
+        });
+
+        const lowestOverallPrice = Math.min(...stationsOverall.map(s => s.price));
+        stationsOverall.forEach(station => {
+            if (station.price === lowestOverallPrice) {
+                const lat = parseFloat(station["Latitud"].replace(',', '.'));
+                const lng = parseFloat(station["Longitud (WGS84)"].replace(',', '.'));
+                
+                const marker = createStationMarker(lat, lng, false, true).addTo(map);
+                markers.push(marker);
+                
+                // Add popup content for the lowest overall price station
+                let popupContent = `
+                    <div class="station-popup">
+                        <h3>${station["Rótulo"]}</h3>
+                        <p>${station["Dirección"]}</p>
+                `;
+                
+                let priceText = '';
+                const fuelTypes = {
+                    "Precio Gasolina 95 E5": "G95",
+                    "Precio Gasoleo A": "Diesel",
+                    "Precio Gasolina 98 E5": "Gasoline 98 E5",
+                    "Precio Gasolina 95 E5 Premium": "Gasoline 95 E5 Premium",
+                    "Precio Gasoleo Premium": "Diesel Premium",
+                    "Precio Hidrogeno": "Hydrogen",
+                    "Precio Gas Natural Comprimido": "CNG",
+                    "Precio Gas Natural Licuado": "LNG",
+                    "Precio Gases licuados del petróleo": "LPG",
+                    "Precio Bioetanol": "Bioethanol",
+                    "Precio Biodiesel": "Biodiesel"
+                };
+
+                if (selectedFuelType === 'all') {
+                    for (const [key, label] of Object.entries(fuelTypes)) {
+                        if (station[key]) {
+                            popupContent += `<p>${label}: <span class="price">${station[key]}€</span></p>`;
+                            priceText += `${label}: ${station[key]}€ `;
+                        }
+                    }
+                } else {
+                    const fuelLabels = {
+                        "Precio Gasolina 95 E5": "Gasoline 95 E5",
+                        "Precio Gasoleo A": "Diesel A",
+                        "Precio Gasolina 98 E5": "Gasoline 98 E5",
+                        "Precio Gasolina 95 E5 Premium": "Gasoline 95 E5 Premium",
+                        "Precio Gasoleo Premium": "Diesel Premium",
+                        "Precio Hidrogeno": "Hydrogen",
+                        "Precio Gas Natural Comprimido": "CNG",
+                        "Precio Gas Natural Licuado": "LNG",
+                        "Precio Gases licuados del petróleo": "LPG",
+                        "Precio Bioetanol": "Bioethanol",
+                        "Precio Biodiesel": "Biodiesel"
+                    };
+                    
+                    if (station[selectedFuelType]) {
+                        popupContent += `<p>${fuelLabels[selectedFuelType]}: <span class="price">${station[selectedFuelType]}€</span></p>`;
+                        priceText = `${station[selectedFuelType]}€`;
+                    }
+                }
+                
+                popupContent += `
+                    <button class="add-to-route-btn" onclick="addStationToRoute(${lat}, ${lng})">Add to Route</button>
+                </div>`;
+                marker.bindPopup(popupContent);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading fuel stations:', error);
+        document.getElementById('loadingCard').style.display = 'none';
+    }
+}
+
+function clearMap() {
+  markers.forEach(marker => map.removeLayer(marker));
+  markers = [];
+  
+  clearRoutePolylines();
+  
+  document.getElementById('loadingCard').style.display = 'none';
+  document.getElementById('googleMapsBtn').style.display = 'none'; 
+}
+
+async function calculateRoute() {
+  clearMap();
+  
+  const originAddress = document.getElementById('origin').value;
+  const destinationAddress = document.getElementById('destination').value;
+
+  try {
+    const origin = await geocodeAddress(originAddress);
+    const destination = await geocodeAddress(destinationAddress);
+    
+    clearRoutePolylines();
+    
+    const tempRoutingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(origin[0], origin[1]),
+        L.latLng(destination[0], destination[1])
+      ],
+      alternativeRoutes: true,
+      routeWhileDragging: false
+    });
+
+    tempRoutingControl.on('routesfound', function(e) {
+      availableRoutes = e.routes.map(route => ({
+        waypoints: [
+          L.latLng(origin[0], origin[1]),
+          L.latLng(destination[0], destination[1])
+        ],
+        summary: route.summary,
+        coordinates: route.coordinates
+      }));
+
+      availableRoutes.forEach((route, index) => {
+        displayRoutePreview(route, index);
+      });
+
+      const bounds = L.latLngBounds(routePolylines.map(p => p.getBounds()));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    });
+
+    tempRoutingControl.route();
+    
+  } catch (error) {
+    alert('Error calculating route: ' + error.message);
+  }
+}
+
+function displayRoutePreview(route, index) {
+  const color = index === selectedRouteIndex ? '#2c3e50' : '#95a5a6';
+  const weight = index === selectedRouteIndex ? 5 : 3;
+  
+  const totalSeconds = route.summary.totalTime;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.round((totalSeconds % 3600) / 60);
+  const durationText = `${hours > 0 ? `${hours}h ` : ''}${minutes}m`;
+
+  // Find shortest route based on time
+  const shortestTime = Math.min(...availableRoutes.map(r => r.summary.totalTime));
+  const isShortestRoute = route.summary.totalTime === shortestTime;
+
+  const popupContent = `
+    <div style="padding: 8px; min-width: 120px; text-align: center; 
+                background: ${isShortestRoute ? '#2196F3' : 'white'};
+                border-radius: 6px;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 3px 0;">
+        <p style="margin: 0; font-size: 14px; font-weight: ${isShortestRoute ? 'bold' : 'normal'}; 
+                  color: ${isShortestRoute ? 'white' : '#2c3e50'};">
+          ${durationText}
+        </p>
+        <svg onclick="selectAndConfirmRoute(${index})" 
+             style="cursor: pointer; transition: transform 0.2s;" 
+             onmouseover="this.style.transform='scale(1.2)'" 
+             onmouseout="this.style.transform='scale(1)'"
+             width="20" height="20" viewBox="0 0 24 24" 
+             fill="none" 
+             stroke="${isShortestRoute ? 'white' : '#2c3e50'}" 
+             stroke-width="2" 
+             stroke-linecap="round" 
+             stroke-linejoin="round">
+          <path d="M5 12h14"/>
+          <path d="M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  `;
+
+  const polyline = L.polyline(route.coordinates, {
+    color: color,
+    weight: weight,
+    opacity: index === selectedRouteIndex ? 1 : 0.6,
+    className: 'route-preview'
+  }).addTo(map);
+
+  // Add popup to the middle point of the route
+  const midPoint = Math.floor(route.coordinates.length / 2);
+  const popup = L.popup({
+    closeButton: true,
+    autoClose: false,
+    closeOnClick: false,
+    className: 'route-popup'
+  })
+  .setLatLng(route.coordinates[midPoint])
+  .setContent(popupContent);
+
+  polyline.bindPopup(popup).openPopup();
+
+  polyline.on('click', () => {
+    selectRoute(index);
+    popup.openPopup();
+  });
+
+  routePolylines.push(polyline);
+}
+
+function selectAndConfirmRoute(index) {
+  selectRoute(index);
+  confirmRoute();
+}
+
+function clearRoutePolylines() {
+  routePolylines.forEach(polyline => map.removeLayer(polyline));
+  routePolylines = []; 
+}
+
+function selectRoute(index) {
+    selectedRouteIndex = index;
+
+    document.querySelectorAll('.route-option').forEach((el, i) => {
+        el.classList.toggle('selected', i === index);
+    });
+
+    routePolylines.forEach((polyline, i) => {
+        polyline.setStyle({
+            color: i === index ? '#2c3e50' : '#95a5a6',
+            weight: i === index ? 5 : 3,
+            opacity: i === index ? 1 : 0.6
+        });
+    });
+}
+
+function confirmRoute() {
+  if (selectedRouteIndex === null) {
+    alert('Please select a route first');
+    return;
+  }
+  
+  const selectedRoute = availableRoutes[selectedRouteIndex];
+  clearRoutePolylines();
+  displaySelectedRoute(selectedRoute);
+  
+  markers.forEach(marker => map.removeLayer(marker));
+  markers = [];
+
+  const coords = selectedRoute.coordinates;
+  const totalDistance = selectedRoute.summary.totalDistance / 1000;
+  const sections = getSections(coords, totalDistance);
+  loadFuelStationsInSections(sections, totalDistance);
+
+  document.getElementById('googleMapsBtn').style.display = 'block';
+}
+
+function displaySelectedRoute(route) {
+  document.getElementById('loadingCard').style.display = 'block';
+  
+  const routeLine = L.polyline(route.coordinates, {
+    color: '#2c3e50',
+    weight: 4
+  }).addTo(map);
+}
+
+async function addStationToRoute(lat, lng) {
+    if (!availableRoutes || !availableRoutes[selectedRouteIndex]) {
+        alert('Please calculate a route first');
+        return;
+    }
+
+    const selectedRoute = availableRoutes[selectedRouteIndex];
+    const newWaypoint = L.latLng(lat, lng);
+
+    if (!selectedRoute.waypoints) {
+        alert('Please select a valid route first');
+        return;
+    }
+
+    selectedRoute.waypoints.splice(selectedRoute.waypoints.length - 1, 0, newWaypoint);
+    
+    const tempRoutingControl = L.Routing.control({
+        waypoints: selectedRoute.waypoints,
+        routeWhileDragging: false
+    });
+
+    tempRoutingControl.on('routesfound', function(e) {
+        const route = e.routes[0];
+        selectedRoute.coordinates = route.coordinates;
+        selectedRoute.summary = route.summary;
+
+        clearRoutePolylines();
+        displaySelectedRoute(selectedRoute);
+
+        const totalDistance = route.summary.totalDistance / 1000;
+        const sections = getSections(route.coordinates, totalDistance);
+        loadFuelStationsInSections(sections, totalDistance);
+
+        const bounds = L.latLngBounds(selectedRoute.coordinates);
+        map.fitBounds(bounds, { padding: [50, 50] });
+    });
+
+    tempRoutingControl.route();
+}
+
+function exportToGoogleMaps() {
+    if (!availableRoutes) {
+        alert('Please calculate a route first');
+        return;
+    }
+
+    if (selectedRouteIndex === null) {
+        if (availableRoutes.length > 0) {
+            selectedRouteIndex = 0;
+        } else {
+            alert('No routes available. Please calculate a route first.');
+            return;
+        }
+    }
+
+    const route = availableRoutes[selectedRouteIndex];
+    if (!route || !route.waypoints || route.waypoints.length < 2) {
+        alert('Invalid route data. Please try calculating the route again.');
+        return;
+    }
+
+    let url = 'https://www.google.com/maps/dir/?api=1&travelmode=driving';
+    
+    url += `&origin=${route.waypoints[0].lat},${route.waypoints[0].lng}`;
+    url += `&destination=${route.waypoints[route.waypoints.length-1].lat},${route.waypoints[route.waypoints.length-1].lng}`;
+    
+    if (route.waypoints.length > 2) {
+        const middleWaypoints = route.waypoints.slice(1, -1);
+        const waypointsString = middleWaypoints
+            .map(wp => `${wp.lat},${wp.lng}`)
+            .join('|');
+        url += `&waypoints=${waypointsString}`;
+    }
+    
+    window.open(url, '_blank');
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+    if (sidebar.classList.contains('open')) {
+        document.addEventListener('click', closeSidebarOnClickOutside);
+    } else {
+        document.removeEventListener('click', closeSidebarOnClickOutside);
+    }
+}
+
+function closeSidebarOnClickOutside(event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuItem = document.getElementById('menuIcon');
+    const isModalOpen = document.querySelector('.fullscreen-modal.open') !== null;
+
+    if (!isModalOpen && sidebar && !sidebar.contains(event.target) && !menuItem.contains(event.target)) {
+        sidebar.classList.remove('open');
+        document.removeEventListener('click', closeSidebarOnClickOutside);
+    }
+}
+
+function setMapType(type) {
+    // Remove existing tile layers
+    Object.values(tileLayers).forEach(layer => map.removeLayer(layer));
+
+    // Check if the selected type is Satellite, and display a warning
+    if (type === 'satellite') {
+        alert('Satellite mode is not available at the moment. Reverting to Standard mode.');
+        type = 'standard'; // Revert to standard
+    }
+
+    // Add the selected map type's tile layer
+    if (tileLayers[type]) {
+        tileLayers[type].addTo(map);
+    }
+
+    document.querySelectorAll('.map-type-option').forEach(option => {
+        option.classList.toggle('selected', option.classList.contains(`${type}-option`));
+    });
+}
+
+// Initialize map type to standard on load
+window.addEventListener('DOMContentLoaded', () => {
+    setMapType('standard');
+    const initialFuelType = document.getElementById('fuelType').value;
+    updateFuelTypeSubtitle(initialFuelType); // Initialize on load
+    updateBrandSubtitle(); // Initialize brand subtitle
+    // Initialize all brand checkboxes to be checked on page load
+    document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
+    // Update the brand subtitle to reflect that all are selected
+    updateBrandSubtitle();
+});
+
+function applyBrandFilter() {
+    const selectedBrands = Array.from(document.querySelectorAll('#brandFilterOptions input:checked'))
+                                .map(input => input.value);
+    updateBrandSubtitle(selectedBrands); 
+    toggleFullscreenModal('modalBrandFilter');  
+}
+
+function applyTankCapacity() {
+    const tankCapacity = document.getElementById('tankCapacityInput').value;
+    updateTankCapacitySubtitle(tankCapacity);
+    toggleFullscreenModal('modalTankCapacity');  
+}
+
+function applyFuelConsumption() {
+    const fuelConsumption = document.getElementById('fuelConsumptionInput').value;
+    updateFuelConsumptionSubtitle(fuelConsumption);
+    toggleFullscreenModal('modalFuelConsumption');  
+}
+
+function applyFuelType() {
+    const selectedFuelType = document.getElementById('fuelType').value;
+    updateFuelTypeSubtitle(selectedFuelType);
+    toggleFullscreenModal('modalFuelType'); // Keep the sidebar open
+}
+
+function updateTankCapacitySubtitle(tankCapacity) {
+    const tankCapacitySubtitle = document.querySelector('.options-item:nth-child(3) .options-subtitle'); // Correct index for Tank Capacity
+    if(tankCapacitySubtitle) {
+        tankCapacitySubtitle.textContent = tankCapacity ? `${tankCapacity}L` : "Enter your vehicle's tank size";
+    }
+}
+
+function updateFuelConsumptionSubtitle(fuelConsumption) {
+    const fuelConsumptionSubtitle = document.querySelector('.options-item:nth-child(4) .options-subtitle'); // Correct index for Fuel Consumption
+    if(fuelConsumptionSubtitle) {
+        fuelConsumptionSubtitle.textContent = fuelConsumption ? `${fuelConsumption}L/100km` : "Input your average fuel usage";
+    }
+}
+
+function updateFuelTypeSubtitle(fuelType) {
+    const fuelTypeSubtitle = document.querySelector('.options-item:nth-child(1) .options-subtitle'); // Correct index for Fuel Type
+    const fuelLabels = {
+        "all": "All fuel types",
+        "Precio Gasolina 95 E5": "Gasoline 95 E5",
+        "Precio Gasoleo A": "Diesel A",
+        "Precio Gasolina 98 E5": "Gasoline 98 E5",
+        "Precio Gasolina 95 E5 Premium": "Gasoline 95 E5 Premium",
+        "Precio Gasoleo Premium": "Diesel Premium",
+        "Precio Hidrogeno": "Hydrogen",
+        "Precio Gas Natural Comprimido": "CNG",
+        "Precio Gas Natural Licuado": "LNG",
+        "Precio Gases licuados del petróleo": "LPG",
+        "Precio Bioetanol": "Bioethanol",
+        "Precio Biodiesel": "Biodiesel"
+    };
+
+    if (fuelTypeSubtitle) {
+        fuelTypeSubtitle.textContent = fuelLabels[fuelType] ?? "Choose your fuel type";
+    }
+}
+
+function updateBrandSubtitle(selectedBrands = []) {
+    const brandSubtitle = document.querySelector('.options-item:nth-child(2) .options-subtitle'); // Correct index for Brand Filter
+    const allBrandsCount = document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').length;
+    if (selectedBrands.length === 0 || selectedBrands.length === allBrandsCount) {
+        brandSubtitle.textContent = "All brands";  
+    } else {
+        brandSubtitle.textContent = selectedBrands.join(', ');
+    }
+}
+
+function selectAllBrands() {
+    document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
+    updateBrandSubtitle(); 
+}
+
+function deselectAllBrands() {
+    document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+    updateBrandSubtitle(); 
+}
+
+function toggleFullscreenModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        const wasOpen = modal.classList.contains('open');
+        document.querySelectorAll('.fullscreen-modal').forEach(m => m.classList.remove('open'));
+        if (!wasOpen) modal.classList.add('open');
+    }
+}
+
+</script>
+</body>
+</html>
