@@ -377,7 +377,85 @@
     border-bottom: 1px solid #e0e0e0;
   }
   .brand-filter-actions {
-    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    margin: 0 0 20px 0;
+    justify-content: center;
+  }
+  .brand-filter-btn {
+    background: #f8f9fa;
+    border: 2px solid #007BFF;
+    color: #007BFF;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .brand-filter-btn:hover {
+    background: #007BFF;
+    color: white;
+    transform: translateY(-1px);
+  }
+  .brand-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .brand-filter-item {
+    padding: 15px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-filter-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #007BFF;
+  }
+  .brand-filter-item.selected {
+    border-color: #007BFF;
+    background: rgba(0,123,255,0.05);
+  }
+  .brand-filter-icon {
+    width: 30px;
+    height: 30px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .brand-filter-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  /* Add scrollbar styles for the brand filter grid */
+  .brand-filter-grid::-webkit-scrollbar {
+    width: 8px;
+  }
+  .brand-filter-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .brand-filter-grid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  .brand-filter-grid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
   }
   .map-type-option.selected:after {
     content: '';
@@ -491,9 +569,289 @@
   .success-message.show {
     opacity: 1;
   }
+  .onboarding-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .onboarding-content {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+  .onboarding-header {
+    margin-bottom: 40px;
+  }
+  .onboarding-header h1 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  .onboarding-header p {
+    color: #666;
+    font-size: 16px;
+  }
+  .onboarding-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .onboarding-step.active {
+    display: block;
+  }
+  .onboarding-step h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 30px;
+  }
+  .fuel-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .fuel-option {
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  .fuel-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .fuel-option.selected {
+    border-color: #007BFF;
+    background: rgba(0,123,255,0.05);
+  }
+  .fuel-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  /* Add scrollbar styles for the fuel-type-grid */
+  .fuel-type-grid::-webkit-scrollbar {
+    width: 8px;
+  }
+  .fuel-type-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .fuel-type-grid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  .fuel-type-grid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  .brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .brand-option {
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #007BFF;
+  }
+  .brand-option.selected {
+    border-color: #007BFF;
+    background: rgba(0,123,255,0.05);
+  }
+  .brand-icon {
+    width: 40px;
+    height: 40px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+  /* Add scrollbar styles for the brand grid */
+  .brand-grid::-webkit-scrollbar {
+    width: 8px;
+  }
+  .brand-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  .brand-grid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  .brand-grid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  .welcome-btn, .next-step-btn, .start-app-btn {
+    background: #007BFF;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 200px;
+    margin: 20px auto;
+}
+
+.welcome-btn:hover, .next-step-btn:hover, .start-app-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.welcome-btn:disabled, .next-step-btn:disabled, .start-app-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.brand-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.brand-action-btn {
+    background: #f8f9fa;
+    border: 2px solid #007BFF;
+    color: #007BFF;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.brand-action-btn:hover {
+    background: #007BFF;
+    color: white;
+    transform: translateY(-1px);
+}
 </style>
 </head>
 <body>
+<div id="onboardingScreen" class="onboarding-screen">
+  <div class="onboarding-content">
+    <!-- Welcome step -->
+    <div class="onboarding-step active" id="welcome">
+      <div class="app-logo">
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="#007BFF"/>
+          <path d="M35 35 L65 50 L35 65 Z" fill="white"/>
+        </svg>
+      </div>
+      <div class="onboarding-header">
+        <h1>Welcome to Drivy</h1>
+        <p>Your smart companion for finding the best fuel prices on your route</p>
+      </div>
+      <button class="welcome-btn" onclick="showStep(1)">Get Started</button>
+    </div>
+    
+    <!-- Updated fuel type step -->
+    <div class="onboarding-step" id="step1">
+      <h2>What type of fuel do you use?</h2>
+      <div class="fuel-type-grid">
+        <div class="fuel-option" data-value="Precio Gasolina 95 E5">
+          <div class="fuel-icon">⛽</div>
+          <span>Gasoline 95 E5</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gasolina 95 E5 Premium">
+          <div class="fuel-icon">⛽</div>
+          <span>Gasoline 95 E5 Premium</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gasolina 98 E5">
+          <div class="fuel-icon">⛽</div>
+          <span>Gasoline 98 E5</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gasoleo A">
+          <div class="fuel-icon">🛢️</div>
+          <span>Diesel A</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gasoleo Premium">
+          <div class="fuel-icon">🛢️</div>
+          <span>Diesel Premium</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Hidrogeno">
+          <div class="fuel-icon">💧</div>
+          <span>Hydrogen</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gas Natural Comprimido">
+          <div class="fuel-icon">🔋</div>
+          <span>CNG</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gas Natural Licuado">
+          <div class="fuel-icon">🔋</div>
+          <span>LNG</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Gases licuados del petróleo">
+          <div class="fuel-icon">💨</div>
+          <span>LPG</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Bioetanol">
+          <div class="fuel-icon">🌱</div>
+          <span>Bioethanol</span>
+        </div>
+        <div class="fuel-option" data-value="Precio Biodiesel">
+          <div class="fuel-icon">🌱</div>
+          <span>Biodiesel</span>
+        </div>
+      </div>
+      <button class="next-step-btn" onclick="showStep(2)" disabled>Continue</button>
+    </div>
+    
+    <div class="onboarding-step" id="step2">
+      <h2>Select your preferred brands</h2>
+      <div class="brand-actions">
+        <button class="brand-action-btn" onclick="selectAllBrandsOnboarding()">Select All</button>
+        <button class="brand-action-btn" onclick="deselectAllBrandsOnboarding()">Deselect All</button>
+      </div>
+      <div class="brand-grid" id="onboardingBrands">
+        <!-- Brands will be populated via JavaScript -->
+      </div>
+      <button class="start-app-btn" onclick="completeOnboarding()" disabled>Start Using Drivy</button>
+    </div>
+  </div>
+</div>
 <div class="route-inputs">
   <input type="text" id="origin" placeholder="Origin address" />
   <input type="text" id="destination" placeholder="Destination address" />
@@ -586,34 +944,13 @@
 <!-- Modals for each section -->
 <div id="modalBrandFilter" class="fullscreen-modal">
   <div class="modal-content">
-    <h2>Set your preferred brands</h2>
-    <p>Select preferred fuel station brands:</p>
+    <h2 style="margin-bottom: 20px;">Set your preferred brands</h2>
     <div class="brand-filter-actions">
-      <button id="selectAllBrands" onclick="selectAllBrands()">Select All</button>
-      <button id="deselectAllBrands" onclick="deselectAllBrands()">Deselect All</button>
+      <button class="brand-filter-btn" onclick="selectAllBrands()">Select All</button>
+      <button class="brand-filter-btn" onclick="deselectAllBrands()">Deselect All</button>
     </div>
-    <div id="brandFilterOptions" class="brand-options">
-      <label><input type="checkbox" value="Alcampo"> Alcampo</label>
-      <label><input type="checkbox" value="Ballenoil"> Ballenoil</label>
-      <label><input type="checkbox" value="Bonarea"> Bonarea</label>
-      <label><input type="checkbox" value="Bp"> Bp</label>
-      <label><input type="checkbox" value="Campsa"> Campsa</label>
-      <label><input type="checkbox" value="Carrefour"> Carrefour</label>
-      <label><input type="checkbox" value="Cepsa"> Cepsa</label>
-      <label><input type="checkbox" value="Disa"> Disa</label>
-      <label><input type="checkbox" value="E.leclerc"> E.leclerc</label>
-      <label><input type="checkbox" value="Eroski"> Eroski</label>
-      <label><input type="checkbox" value="Esso"> Esso</label>
-      <label><input type="checkbox" value="Galp"> Galp</label>
-      <label><input type="checkbox" value="Makro"> Makro</label>
-      <label><input type="checkbox" value="Meroil"> Meroil</label>
-      <label><input type="checkbox" value="Pcan"> Pcan</label>
-      <label><input type="checkbox" value="Petronor"> Petronor</label>
-      <label><input type="checkbox" value="Repsol"> Repsol</label>
-      <label><input type="checkbox" value="Shell"> Shell</label>
-      <label><input type="checkbox" value="Texaco"> Texaco</label>
-      <label><input type="checkbox" value="Tgas"> Tgas</label>
-      <label><input type="checkbox" value="Otras"> Otras</label>
+    <div id="brandFilterGrid" class="brand-filter-grid">
+      <!-- Brand items will be populated via JavaScript -->
     </div>
     <button class="close-modal" onclick="applyBrandFilter()">Apply</button>
   </div>
@@ -680,6 +1017,92 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script>
+function initializeBrandFilter() {
+    const brandData = [
+        { name: 'Alcampo', icon: '🏪' },
+        { name: 'Ballenoil', icon: '⛽' },
+        { name: 'Bonarea', icon: '⛽' },
+        { name: 'Bp', icon: '⛽' },
+        { name: 'Campsa', icon: '⛽' },
+        { name: 'Carrefour', icon: '🏪' },
+        { name: 'Cepsa', icon: '⛽' },
+        { name: 'Disa', icon: '⛽' },
+        { name: 'E.leclerc', icon: '🏪' },
+        { name: 'Eroski', icon: '🏪' },
+        { name: 'Esso', icon: '⛽' },
+        { name: 'Galp', icon: '⛽' },
+        { name: 'Makro', icon: '🏪' },
+        { name: 'Meroil', icon: '⛽' },
+        { name: 'Pcan', icon: '⛽' },
+        { name: 'Petronor', icon: '⛽' },
+        { name: 'Repsol', icon: '⛽' },
+        { name: 'Shell', icon: '⛽' },
+        { name: 'Texaco', icon: '⛽' },
+        { name: 'Tgas', icon: '⛽' },
+        { name: 'Otras', icon: '⛽' }
+    ];
+    
+    if (!document.getElementById('brandFilterOptions')) {
+        const container = document.createElement('div');
+        container.id = 'brandFilterOptions';
+        container.className = 'brand-filter-grid';
+        document.querySelector('#modalBrandFilter .modal-content').insertBefore(
+            container,
+            document.querySelector('#modalBrandFilter .close-modal')
+        );
+    }
+    
+    const container = document.getElementById('brandFilterOptions');
+    container.innerHTML = ''; // Clear existing content
+    
+    brandData.forEach(brand => {
+        const div = document.createElement('div');
+        div.className = 'brand-filter-item selected';  // Add selected by default
+        div.innerHTML = `
+            <div class="brand-filter-icon">${brand.icon}</div>
+            <label class="brand-filter-name">
+                <input type="checkbox" value="${brand.name}" checked style="display: none;">
+                ${brand.name}
+            </label>
+        `;
+        
+        div.addEventListener('click', () => {
+            const checkbox = div.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            div.classList.toggle('selected', checkbox.checked);
+            updateBrandSubtitle();
+        });
+        
+        container.appendChild(div);
+    });
+
+    // Add event listeners for the Select All and Deselect All buttons
+    document.querySelector('#modalBrandFilter .brand-filter-actions').innerHTML = `
+        <button class="brand-filter-btn" onclick="selectAllBrands()">Select All</button>
+        <button class="brand-filter-btn" onclick="deselectAllBrands()">Deselect All</button>
+    `;
+}
+
+function selectAllBrands() {
+    const items = document.querySelectorAll('#brandFilterOptions .brand-filter-item');
+    items.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.checked = true;
+        item.classList.add('selected');
+    });
+    updateBrandSubtitle();
+}
+
+function deselectAllBrands() {
+    const items = document.querySelectorAll('#brandFilterOptions .brand-filter-item');
+    items.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.checked = false;
+        item.classList.remove('selected');
+    });
+    updateBrandSubtitle();
+}
+
 const map = L.map('map', {
     zoomControl: false  
 }).setView([40.4168, -3.7038], 6);
@@ -1321,6 +1744,155 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
     // Update the brand subtitle to reflect that all are selected
     updateBrandSubtitle();
+    initializeBrandFilter();
+});
+
+function showOnboardingIfFirstTime() {
+  if (!localStorage.getItem('onboardingCompleted')) {
+    document.getElementById('onboardingScreen').style.display = 'flex';
+  } else {
+    document.getElementById('onboardingScreen').style.display = 'none';
+  }
+}
+
+function showStep(step) {
+  document.querySelectorAll('.onboarding-step').forEach(el => {
+    el.classList.remove('active');
+  });
+  document.getElementById(`step${step}`).classList.add('active');
+}
+
+function selectFuelType(element) {
+  document.querySelectorAll('.fuel-option').forEach(el => {
+    el.classList.remove('selected');
+  });
+  element.classList.add('selected');
+  document.querySelector('.next-step-btn').disabled = false;
+  
+  // Store selected fuel type
+  const selectedFuel = element.dataset.value;
+  document.getElementById('fuelType').value = selectedFuel;
+}
+
+function selectBrand(element) {
+  element.classList.toggle('selected');
+  // Enable/disable the start button based on selection
+  const selectedBrands = document.querySelectorAll('.brand-option.selected');
+  const startButton = document.querySelector('.start-app-btn');
+  
+  if (startButton) {
+      if (selectedBrands.length === 0) {
+          startButton.disabled = true;
+          startButton.style.opacity = '0.5';
+      } else {
+          startButton.disabled = false;
+          startButton.style.opacity = '1';
+      }
+  }
+  
+  // Add a subtle animation to the selected/deselected brand
+  element.style.transform = 'scale(1.05)';
+  setTimeout(() => {
+      element.style.transform = 'scale(1)';
+  }, 150);
+}
+
+function populateBrands() {
+    const brandData = [
+        { name: 'Alcampo', icon: '🏪' },
+        { name: 'Ballenoil', icon: '⛽' },
+        { name: 'Bonarea', icon: '⛽' },
+        { name: 'Bp', icon: '⛽' },
+        { name: 'Campsa', icon: '⛽' },
+        { name: 'Carrefour', icon: '🏪' },
+        { name: 'Cepsa', icon: '⛽' },
+        { name: 'Disa', icon: '⛽' },
+        { name: 'E.leclerc', icon: '🏪' },
+        { name: 'Eroski', icon: '🏪' },
+        { name: 'Esso', icon: '⛽' },
+        { name: 'Galp', icon: '⛽' },
+        { name: 'Makro', icon: '🏪' },
+        { name: 'Meroil', icon: '⛽' },
+        { name: 'Pcan', icon: '⛽' },
+        { name: 'Petronor', icon: '⛽' },
+        { name: 'Repsol', icon: '⛽' },
+        { name: 'Shell', icon: '⛽' },
+        { name: 'Texaco', icon: '⛽' },
+        { name: 'Tgas', icon: '⛽' },
+        { name: 'Otras', icon: '⛽' }
+    ];
+    
+    const container = document.getElementById('onboardingBrands');
+    container.innerHTML = ''; // Clear existing content
+    
+    brandData.forEach(brand => {
+        const div = document.createElement('div');
+        div.className = 'brand-option';
+        div.innerHTML = `
+            <div class="brand-icon">${brand.icon}</div>
+            <div class="brand-name">${brand.name}</div>
+        `;
+        div.onclick = () => selectBrand(div);
+        container.appendChild(div);
+    });
+}
+
+function completeOnboarding() {
+  const selectedBrands = Array.from(document.querySelectorAll('.brand-option.selected'))
+    .map(el => el.textContent);
+  
+  // Update brand checkboxes
+  document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = selectedBrands.includes(checkbox.value);
+  });
+  
+  // Save onboarding completion
+  localStorage.setItem('onboardingCompleted', 'true');
+  
+  // Hide onboarding screen
+  document.getElementById('onboardingScreen').style.display = 'none';
+  
+  // Update UI
+  updateBrandSubtitle(selectedBrands);
+  updateFuelTypeSubtitle(document.getElementById('fuelType').value);
+}
+
+function selectAllBrandsOnboarding() {
+    document.querySelectorAll('.brand-option').forEach(brandOption => {
+        if (!brandOption.classList.contains('selected')) {
+            brandOption.classList.add('selected');
+        }
+    });
+
+    // Enable start button
+    const startButton = document.querySelector('.start-app-btn');
+    if (startButton) {
+        startButton.disabled = false;
+        startButton.style.opacity = '1';
+    }
+}
+
+function deselectAllBrandsOnboarding() {
+    document.querySelectorAll('.brand-option').forEach(brandOption => {
+        brandOption.classList.remove('selected');
+    });
+    
+    // Disable start button
+    const startButton = document.querySelector('.start-app-btn');
+    if (startButton) {
+        startButton.disabled = true;
+        startButton.style.opacity = '0.5';
+    }
+}
+
+// Add event listeners
+window.addEventListener('DOMContentLoaded', () => {
+  showOnboardingIfFirstTime();
+  populateBrands();
+  
+  document.querySelectorAll('.fuel-option').forEach(option => {
+    option.addEventListener('click', () => selectFuelType(option));
+  });
 });
 
 function applyBrandFilter() {
@@ -1395,13 +1967,23 @@ function updateBrandSubtitle(selectedBrands = []) {
 }
 
 function selectAllBrands() {
-    document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
-    updateBrandSubtitle(); 
+    const items = document.querySelectorAll('#brandFilterOptions .brand-filter-item');
+    items.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.checked = true;
+        item.classList.add('selected');
+    });
+    updateBrandSubtitle();
 }
 
 function deselectAllBrands() {
-    document.querySelectorAll('#brandFilterOptions input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
-    updateBrandSubtitle(); 
+    const items = document.querySelectorAll('#brandFilterOptions .brand-filter-item');
+    items.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.checked = false;
+        item.classList.remove('selected');
+    });
+    updateBrandSubtitle();
 }
 
 function toggleFullscreenModal(id) {
@@ -1478,6 +2060,15 @@ function useCurrentLocation() {
     } else {
         alert("Location services are not supported by your browser. Please try using a different browser or manually enter your location.");
     }
+}
+
+function reopenWelcome() {
+    // Reset onboarding state
+    document.getElementById('onboardingScreen').style.display = 'flex';
+    document.querySelectorAll('.onboarding-step').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.getElementById('welcome').classList.add('active');
 }
 </script>
 </body>
